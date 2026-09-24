@@ -1,6 +1,11 @@
+---
+name: view-md
+description: /view-md — Open a markdown file in the Vollkorn viewer
+---
+
 # /view-md — Open a markdown file in the Vollkorn viewer
 
-Launch the local md-view server for a markdown file and open it in the browser.
+Launch the local viewer server for a markdown file. It opens the browser itself.
 
 ## Usage
 
@@ -8,27 +13,30 @@ Launch the local md-view server for a markdown file and open it in the browser.
 
 ## Steps
 
-1. Resolve the file path to an absolute path
-   - If a path was given as an argument, resolve it: `realpath <path>` or prepend the current working directory
-   - If no argument, use the most recently created or mentioned `.md` file in the conversation
+1. Resolve the file to an absolute path. With no argument, use the most recently created or
+   mentioned `.md` file in the conversation.
 
-2. Check if md-view is available:
+2. Launch it with Bash `run_in_background: true` (not `&`, which the harness may kill):
    ```bash
-   which md-view 2>/dev/null
+   view-md /absolute/path/to/file.md
+   ```
+   If `view-md` is not found, run the source directly and re-link it for next time:
+   ```bash
+   node ~/code/md-view/index.js /absolute/path/to/file.md
+   (cd ~/code/md-view && npm link)
    ```
 
-3. Launch the viewer (backgrounded so it doesn't block):
-   - If md-view found: `md-view /absolute/path/to/file.md &`
-   - If not found: `npx md-view /absolute/path/to/file.md &`
+3. Confirm with a single line: `Opened in viewer: <filename>`
 
-4. Confirm with a single line:
-   ```
-   Opened in viewer: <filename>
-   ```
+## Do NOT
+
+- **Never `npx md-view` or `npx view-md`.** Neither name on npm is this tool: `md-view` is an
+  unrelated package that fails (`marked: command not found`), and `view-md` 404s. This viewer is
+  not published; its source is `~/code/md-view` (package `claude-md-viewer`, bin `view-md`).
+- **Never run `open` on the URL.** The server already opens the browser; a second `open` spawns a
+  duplicate tab.
 
 ## Notes
 
-- The viewer auto-opens in the default browser
-- It live-reloads when the file changes on disk
-- Each invocation starts a new server on the next available port starting at 7337
-- Stop with Ctrl+C in the terminal where it was launched
+- Live-reloads when the file changes on disk — no need to reopen after edits.
+- Each invocation starts a new server on the next free port from 7337.
